@@ -6,10 +6,11 @@
         class="absolute bg-weather-secondary text-white w-full shadow-md py-2 px-1 top-[66px]"
         v-if="mapboxSearchResults">
         <p v-if="searchError">Sorry, something went wrong, please try again.</p>
-        <p v-if="!serverError && mapboxSearchResults.length === 0">No results match your query, try a different term.</p>
+        <p v-if="!searchError && mapboxSearchResults.length === 0">No results match your query, try a different term.</p>
         <template v-else>
           <li v-for="searchResult in mapboxSearchResults" :key="searchResult.id"
           class="py-2 cursor-pointer"
+          @click="previewCity(searchResult)"
           >
           {{ searchResult.properties.full_address }}
         </li>
@@ -23,6 +24,24 @@
 <script setup>
 import axios from "axios";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+const previewCity = (searchResult) => {
+  console.log(searchResult);
+  const [city, state] = searchResult.properties.full_address.split(",");
+  console.log(city, state);
+  router.push({
+    name: 'cityView',
+    params: { state: state.replaceAll(" ", ""), city: city },
+    query: {
+      lat: searchResult.geometry.coordinates[1],
+      lng: searchResult.geometry.coordinates[0],
+      preview: true,
+    }
+  })
+}
 
 const mapboxAPIKey = "pk.eyJ1Ijoic3RlaW1lciIsImEiOiJjbHdmM2N4ankwamoyMnFtdHM3bTR3aHFqIn0.sa3_ERn4jpEPamb1YI4NlQ";
 const searchQuery = ref("");
